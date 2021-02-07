@@ -4,12 +4,17 @@
 #include "FastLED.h"
 
 
-#define TRANSITION_DELAY 20
-#define FULL_CYCLE_DELAY 10000
+#define TRANSITION_DELAY 25
+#define FULL_CYCLE_DELAY 15 * 60 * 1000
 #define N_CHAMBERS 7
 #define NUM_LEDS 136          // Number of RGB LEDs in the strand
 #define COLOUR_ORDER GRB      // Colour order within each led 
 #define LED_PIN 6             // Arduino pin used for Data
+
+#define MAX_R 210
+#define MAX_G 115
+#define MAX_B  90
+
 
 // Define the array of leds
 CRGB leds[NUM_LEDS];
@@ -18,14 +23,15 @@ struct color {
     char r; char g; char b;
 };
 
+
+
 struct color R = {r: 200, g: 0,   b: 0};
 struct color B = {r: 0,   g: 0,   b: 200};
 struct color Y = {r: 200, g: 80,  b: 0};
-struct color W = {r: 200, g: 130, b: 100};
+struct color W = {r: MAX_R, g: MAX_G, b: MAX_B};
 struct color I = {r: 255, g: 255, b: 255};
 struct color G = {r: 0, g: 255, b: 0};
 struct color colors[N_CHAMBERS] = {W, R, W, W, B, Y, W};
-
 
 struct chamber {
     int first;
@@ -52,12 +58,13 @@ void apply_rgb(int chamber_index, struct color c) {
     }
 }
 
+
 void transition_to_white(CRGB *leds_copy) {
     for(int k = 0; k < 256; k++) {
         for(int i = 0; i < NUM_LEDS; i++) {
-            if ((k >= leds_copy[i].r) && (k <= 200)) {leds[i].r = k;}
-            if ((k >= leds_copy[i].g) && (k <= 180)) {leds[i].g = k;}
-            if ((k >= leds_copy[i].b) && (k <= 150)) {leds[i].b = k;}
+            if ((k >= leds_copy[i].r) && (k <= MAX_R)) {leds[i].r = k;}
+            if ((k >= leds_copy[i].g) && (k <= MAX_G)) {leds[i].g = k;}
+            if ((k >= leds_copy[i].b) && (k <= MAX_B)) {leds[i].b = k;}
         }
         FastLED.show();
         delay(TRANSITION_DELAY);
@@ -67,9 +74,9 @@ void transition_to_white(CRGB *leds_copy) {
 void transition_from_white(CRGB *leds_copy) {
     for(int k = 255; k >= 0; k--) {
         for(int i = 0; i < NUM_LEDS; i++) {
-            if ((k >= leds_copy[i].r) && (k <= 200)) {leds[i].r = k;}
-            if ((k >= leds_copy[i].g) && (k <= 180)) {leds[i].g = k;}
-            if ((k >= leds_copy[i].b) && (k <= 150)) {leds[i].b = k;}
+            if ((k >= leds_copy[i].r) && (k <= MAX_R)) {leds[i].r = k;}
+            if ((k >= leds_copy[i].g) && (k <= MAX_G)) {leds[i].g = k;}
+            if ((k >= leds_copy[i].b) && (k <= MAX_B)) {leds[i].b = k;}
         }
         FastLED.show();
         delay(TRANSITION_DELAY);
@@ -145,12 +152,12 @@ void loop(){
         leds_copy[i] = leds[i];
     }
 
+    //transition_to_white2(leds_copy, chambers, colors);
     transition_to_white(leds_copy);
     shift_color_sequence(colors);
     color_to_leds(leds_copy, chambers, colors);
     transition_from_white(leds_copy);
-    
-    
+     
     apply_color_sequence(colors);
     FastLED.show();
 
